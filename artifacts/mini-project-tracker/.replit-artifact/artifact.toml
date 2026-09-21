@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Mini Project Task Tracker"
+description = "A focused project and task tracker for students, makers, and small teams. Create projects, manage tasks, monitor deadlines, and understand progress at a glance."
+version = "1.0.0"
+id = "artifacts/mini-project-tracker"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24374
+
+[services.development]
+run = "pnpm --filter @workspace/mini-project-tracker run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/mini-project-tracker", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/mini-project-tracker/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24374"
+BASE_PATH = "/"

@@ -1,0 +1,1 @@
+- [Date-only API values](date-only-api-values.md) — normalize calendar dates before display or binding them to date inputs.

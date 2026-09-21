@@ -1,6 +1,6 @@
-# [Project name]
+# Mini Project Task Tracker
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A focused project and task tracker for turning small goals into clear next actions and visible progress.
 
 ## Run & Operate
 
@@ -22,23 +22,34 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/mini-project-tracker/src/App.tsx` — responsive dashboard, projects, project detail, and task list UI
+- `artifacts/mini-project-tracker/src/index.css` — shared visual theme and interaction styles
+- `lib/api-spec/openapi.yaml` — source of truth for project, task, and dashboard API contracts
+- `lib/db/src/schema/projects.ts` and `lib/db/src/schema/tasks.ts` — persisted data models
+- `artifacts/api-server/src/routes/` — dashboard, project, and task API handlers
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The frontend uses generated React Query hooks from the OpenAPI contract rather than hand-written fetch calls.
+- Projects and tasks use calendar dates for deadlines and timestamps for audit fields.
+- Project progress is derived from completed tasks and safely returns 0% when a project has no tasks.
+- Deleting a project cascades to its tasks at the database level.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Dashboard with completion, in-progress, due-today, overdue, and project-progress summaries
+- Project creation and editing with scope, outcome, category, and target dates
+- Task creation, editing, deletion, duplication, inline completion, search, filtering, and sorting
+- Responsive desktop/mobile layout with helpful empty and loading states
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+No additional preferences recorded.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Run `pnpm --filter @workspace/api-spec run codegen` after changing the OpenAPI contract.
+- Run `pnpm run typecheck` after backend or generated-client changes.
 
 ## Pointers
 

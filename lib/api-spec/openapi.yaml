@@ -3,13 +3,19 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Mini Project Task Tracker API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: projects
+    description: Project operations
+  - name: tasks
+    description: Task operations
+  - name: dashboard
+    description: Dashboard summaries
 paths:
   /healthz:
     get:
@@ -24,7 +30,252 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary
+      description: Returns task counts, deadline buckets, and project progress.
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List projects
+      responses:
+        "200":
+          description: Project list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+    post:
+      operationId: createProject
+      tags: [projects]
+      summary: Create a project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectInput"
+      responses:
+        "201":
+          description: Created project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "400":
+          description: Invalid project
+  /projects/{id}:
+    get:
+      operationId: getProject
+      tags: [projects]
+      summary: Get a project
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "404":
+          description: Project not found
+    patch:
+      operationId: updateProject
+      tags: [projects]
+      summary: Update a project
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectUpdate"
+      responses:
+        "200":
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "400":
+          description: Invalid project
+        "404":
+          description: Project not found
+    delete:
+      operationId: deleteProject
+      tags: [projects]
+      summary: Delete a project
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Project deleted
+        "404":
+          description: Project not found
+  /projects/{id}/tasks:
+    get:
+      operationId: listProjectTasks
+      tags: [projects, tasks]
+      summary: List tasks for a project
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Project task list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+        "404":
+          description: Project not found
+  /tasks:
+    get:
+      operationId: listTasks
+      tags: [tasks]
+      summary: List tasks
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: status
+          schema:
+            $ref: "#/components/schemas/TaskStatus"
+        - in: query
+          name: priority
+          schema:
+            $ref: "#/components/schemas/TaskPriority"
+        - in: query
+          name: due
+          schema:
+            type: string
+            enum: [overdue, today, this-week, no-date]
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [priority, due-date, status]
+            default: due-date
+      responses:
+        "200":
+          description: Task list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+    post:
+      operationId: createTask
+      tags: [tasks]
+      summary: Create a task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskInput"
+      responses:
+        "201":
+          description: Created task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "400":
+          description: Invalid task
+  /tasks/{id}:
+    get:
+      operationId: getTask
+      tags: [tasks]
+      summary: Get a task
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "404":
+          description: Task not found
+    patch:
+      operationId: updateTask
+      tags: [tasks]
+      summary: Update a task
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskUpdate"
+      responses:
+        "200":
+          description: Updated task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "400":
+          description: Invalid task
+        "404":
+          description: Task not found
+    delete:
+      operationId: deleteTask
+      tags: [tasks]
+      summary: Delete a task
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Task deleted
+        "404":
+          description: Task not found
+  /tasks/{id}/duplicate:
+    post:
+      operationId: duplicateTask
+      tags: [tasks]
+      summary: Duplicate a task
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "201":
+          description: Duplicated task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "404":
+          description: Task not found
 components:
+  parameters:
+    Id:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: integer
+        minimum: 1
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +284,109 @@ components:
           type: string
       required:
         - status
+    TaskStatus:
+      type: string
+      enum: [todo, in-progress, completed]
+    TaskPriority:
+      type: string
+      enum: [low, medium, high]
+    Project:
+      type: object
+      required: [id, name, description, scope, startDate, targetDate, expectedOutcome, category, createdAt, updatedAt, taskCount, completedTaskCount, progress]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: string }
+        scope: { type: string }
+        startDate: { type: ["string", "null"], format: date }
+        targetDate: { type: ["string", "null"], format: date }
+        expectedOutcome: { type: string }
+        category: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        taskCount: { type: integer }
+        completedTaskCount: { type: integer }
+        progress: { type: integer, minimum: 0, maximum: 100 }
+    ProjectInput:
+      type: object
+      required: [name, description, scope, expectedOutcome]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        description: { type: string, maxLength: 500 }
+        scope: { type: string, maxLength: 2000 }
+        startDate: { type: ["string", "null"], format: date }
+        targetDate: { type: ["string", "null"], format: date }
+        expectedOutcome: { type: string, maxLength: 2000 }
+        category: { type: ["string", "null"], maxLength: 80 }
+    ProjectUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        description: { type: string, maxLength: 500 }
+        scope: { type: string, maxLength: 2000 }
+        startDate: { type: ["string", "null"], format: date }
+        targetDate: { type: ["string", "null"], format: date }
+        expectedOutcome: { type: string, maxLength: 2000 }
+        category: { type: ["string", "null"], maxLength: 80 }
+    Task:
+      type: object
+      required: [id, projectId, projectName, name, notes, status, priority, dueDate, assignee, createdAt, updatedAt]
+      properties:
+        id: { type: integer }
+        projectId: { type: integer }
+        projectName: { type: string }
+        name: { type: string }
+        notes: { type: string }
+        status: { $ref: "#/components/schemas/TaskStatus" }
+        priority: { $ref: "#/components/schemas/TaskPriority" }
+        dueDate: { type: ["string", "null"], format: date }
+        assignee: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    TaskInput:
+      type: object
+      required: [projectId, name, status, priority]
+      properties:
+        projectId: { type: integer, minimum: 1 }
+        name: { type: string, minLength: 1, maxLength: 160 }
+        notes: { type: string, maxLength: 2000 }
+        status: { $ref: "#/components/schemas/TaskStatus" }
+        priority: { $ref: "#/components/schemas/TaskPriority" }
+        dueDate: { type: ["string", "null"], format: date }
+        assignee: { type: ["string", "null"], maxLength: 120 }
+    TaskUpdate:
+      type: object
+      properties:
+        projectId: { type: integer, minimum: 1 }
+        name: { type: string, minLength: 1, maxLength: 160 }
+        notes: { type: string, maxLength: 2000 }
+        status: { $ref: "#/components/schemas/TaskStatus" }
+        priority: { $ref: "#/components/schemas/TaskPriority" }
+        dueDate: { type: ["string", "null"], format: date }
+        assignee: { type: ["string", "null"], maxLength: 120 }
+    DashboardProjectProgress:
+      type: object
+      required: [id, name, progress, taskCount, completedTaskCount, targetDate]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        progress: { type: integer, minimum: 0, maximum: 100 }
+        taskCount: { type: integer }
+        completedTaskCount: { type: integer }
+        targetDate: { type: ["string", "null"], format: date }
+    DashboardSummary:
+      type: object
+      required: [totalTasks, completedTasks, inProgressTasks, overdueTasks, completionRate, dueToday, dueThisWeek, projects]
+      properties:
+        totalTasks: { type: integer }
+        completedTasks: { type: integer }
+        inProgressTasks: { type: integer }
+        overdueTasks: { type: integer }
+        completionRate: { type: integer, minimum: 0, maximum: 100 }
+        dueToday: { type: integer }
+        dueThisWeek: { type: integer }
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/DashboardProjectProgress"
 
